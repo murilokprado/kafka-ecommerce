@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.UUID;
 
 public class CreateUserService {
 
@@ -15,9 +16,13 @@ public class CreateUserService {
     public CreateUserService() throws SQLException {
         this.connection = DriverManager.getConnection(url);
 
-        connection.createStatement().execute("create table Users("
-                + "uuid varchar(200) primary key,"
-                + "email varchar(200))");
+        try {
+            connection.createStatement().execute("create table Users("
+                    + "uuid varchar(200) primary key,"
+                    + "email varchar(200))");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public static void main(String[] args) throws SQLException {
@@ -38,8 +43,8 @@ public class CreateUserService {
         var insert = connection.prepareStatement("insert into Users(uuid, email)"
                 + " values (?, ?)");
 
-        insert.setString(1, "uuid");
-        insert.setString(2, "email");
+        insert.setString(1, UUID.randomUUID().toString());
+        insert.setString(2, email);
         insert.execute();
 
         System.out.println("Usuário uuid e " + email + " adicionado");
@@ -51,7 +56,7 @@ public class CreateUserService {
 
         var results = exists.executeQuery();
 
-        return results.next();
+        return !results.next();
     }
 
     private void parse(ConsumerRecord<String, Order> record) throws SQLException {

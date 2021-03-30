@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 
 public class FraudDetectorService {
 
-    private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<Order>();
+    private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>();
 
     public static void main(String[] args) {
         var fraudService = new FraudDetectorService();

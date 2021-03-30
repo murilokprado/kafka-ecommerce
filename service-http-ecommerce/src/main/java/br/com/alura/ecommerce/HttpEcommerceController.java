@@ -4,7 +4,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-public class HttpEcommerceControler {
+public class HttpEcommerceController {
 
     public static void main(String[] args) throws Exception {
         var server = new Server(8080);
@@ -12,6 +12,7 @@ public class HttpEcommerceControler {
         var context = new ServletContextHandler();
         context.setContextPath("/");
         context.addServlet(new ServletHolder(new NewOrderServlet()), "/new");
+        context.addServlet(new ServletHolder(new GenerateAllReportsServlet()), "/admin/generate_reports");
 
         server.setHandler(context);
 

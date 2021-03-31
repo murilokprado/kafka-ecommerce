@@ -12,6 +12,8 @@ public class NewOrderServlet extends HttpServlet {
     private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>();
     private final KafkaDispatcher<String> emailDispatcher = new KafkaDispatcher<>();
 
+    private final CorrelationId correlationId = new CorrelationId(NewOrderServlet.class.getSimpleName());
+
     @Override
     public void destroy() {
         super.destroy();
@@ -28,10 +30,10 @@ public class NewOrderServlet extends HttpServlet {
             var orderId = UUID.randomUUID().toString();
 
             var order = new Order(orderId, amount, email);
-            orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
+            orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, correlationId, order);
 
             var emailCode = "Thank you for your order! We are processing your order!";
-            emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, emailCode);
+            emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, correlationId, emailCode);
 
             var messageReturn = "New order sent successfully.";
             System.out.println(messageReturn);

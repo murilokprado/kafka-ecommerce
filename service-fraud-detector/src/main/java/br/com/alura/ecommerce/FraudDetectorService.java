@@ -17,7 +17,6 @@ public class FraudDetectorService {
                 FraudDetectorService.class.getSimpleName(),
                 "ECOMMERCE_NEW_ORDER",
                 fraudService::parse,
-                Order.class,
                 Map.of())) {
 
             service.run();
@@ -28,7 +27,7 @@ public class FraudDetectorService {
         return order.getAmount().compareTo(BigDecimal.valueOf(4500)) >= 0;
     }
 
-    private void parse(ConsumerRecord<String, Order> record) throws ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<Order>> record) throws ExecutionException, InterruptedException {
         System.out.println("-----------------------------------------");
         System.out.println("Processing new order, checking for fraud");
         System.out.println(record.key());
@@ -42,14 +41,23 @@ public class FraudDetectorService {
             e.printStackTrace();
         }
 
-        var order = record.value();
+        var message = record.value();
+        var order = message.getPayload();
 
         if (isFraud(order)) {
             // pretending that the fraud happens when the amount is >= 4500
             System.out.println("Order is a fraud!!!" + order);
-            orderDispatcher.send("ECOMMERCE_ORDER_REJECTED", order.getEmail(), order);
+            orderDispatcher.send(
+                    "ECOMMERCE_ORDER_REJECTED",
+                    order.getEmail(),
+                    message.getId().continueWith(FraudDetectorService.class.getSimpleName()),
+                    order);
         } else {
-            orderDispatcher.send("ECOMMERCE_ORDER_APPROVED", order.getEmail(), order);
+            orderDispatcher.send(
+                    "ECOMMERCE_ORDER_APPROVED",
+                    order.getEmail(),
+                    message.getId().continueWith(FraudDetectorService.class.getSimpleName()),
+                    order);
             System.out.println("Approved: " + order);
         }
 

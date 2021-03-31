@@ -1,14 +1,12 @@
 package br.com.alura.ecommerce;
 
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.io.Closeable;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 class KafkaDispatcher<T> implements Closeable {
 
@@ -24,6 +22,11 @@ class KafkaDispatcher<T> implements Closeable {
     }
 
     void send(String topic, String key, CorrelationId id, T payload) throws ExecutionException, InterruptedException {
+        Future<RecordMetadata> future = sendAsync(topic, key, id, payload);
+        future.get();
+    }
+
+    Future<RecordMetadata> sendAsync(String topic, String key, CorrelationId id, T payload) {
         var value = new Message<>(id, payload);
         var record = new ProducerRecord<>(topic, key, value);
 
@@ -39,7 +42,7 @@ class KafkaDispatcher<T> implements Closeable {
                             "/ timestamp " + data.timestamp());
         };
 
-        producer.send(record, callback).get();
+        return producer.send(record, callback);
     }
 
     private static Properties properties() {

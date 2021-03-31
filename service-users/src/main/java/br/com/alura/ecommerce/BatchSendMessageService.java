@@ -29,7 +29,7 @@ public class BatchSendMessageService {
         }
     }
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
         var batchService = new BatchSendMessageService();
 
         try (var service = new KafkaService<>(
@@ -54,8 +54,7 @@ public class BatchSendMessageService {
         return users;
     }
 
-    private void parse(ConsumerRecord<String, Message<String>> record)
-            throws ExecutionException, InterruptedException, SQLException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException {
         System.out.println("-----------------------------------------");
         System.out.println("Processing new batch");
 
@@ -64,7 +63,7 @@ public class BatchSendMessageService {
         System.out.println("Topic: " + message.getPayload());
 
         for (User user : getAllUsers()) {
-            userDispatcher.send(
+            userDispatcher.sendAsync(
                     message.getPayload(),
                     user.geUUID(),
                     message.getId().continueWith(BatchSendMessageService.class.getSimpleName()),

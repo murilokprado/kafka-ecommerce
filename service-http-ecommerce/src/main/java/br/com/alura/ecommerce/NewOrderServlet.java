@@ -1,5 +1,7 @@
 package br.com.alura.ecommerce;
 
+import br.com.alura.ecommerce.dispatcher.KafkaDispatcher;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -10,7 +12,6 @@ import java.util.UUID;
 public class NewOrderServlet extends HttpServlet {
 
     private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>();
-    private final KafkaDispatcher<String> emailDispatcher = new KafkaDispatcher<>();
 
     private final CorrelationId correlationId = new CorrelationId(NewOrderServlet.class.getSimpleName());
 
@@ -18,7 +19,6 @@ public class NewOrderServlet extends HttpServlet {
     public void destroy() {
         super.destroy();
         orderDispatcher.close();
-        emailDispatcher.close();
     }
 
     @Override
@@ -31,9 +31,6 @@ public class NewOrderServlet extends HttpServlet {
 
             var order = new Order(orderId, amount, email);
             orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, correlationId, order);
-
-            var emailCode = "Thank you for your order! We are processing your order!";
-            emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, correlationId, emailCode);
 
             var messageReturn = "New order sent successfully.";
             System.out.println(messageReturn);

@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public class NewOrderServlet extends HttpServlet {
 
@@ -26,17 +25,25 @@ public class NewOrderServlet extends HttpServlet {
         try {
             var email = req.getParameter("email");
             var amount = new BigDecimal(req.getParameter("amount"));
-
-            var orderId = UUID.randomUUID().toString();
+            var orderId = req.getParameter("uuid");
 
             var order = new Order(orderId, amount, email);
-            orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, correlationId, order);
 
-            var messageReturn = "New order sent successfully.";
-            System.out.println(messageReturn);
+            try (var database = new OrdersDatabase()) {
+                if (database.saveNew(order)) {
+                    orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, correlationId, order);
 
-            resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().println(messageReturn);
+                    System.out.println("New order sent successfully.");
+
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                    resp.getWriter().println("New order sent");
+                } else {
+                    System.out.println("Old order received.");
+
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                    resp.getWriter().println("Old order received.");
+                }
+            }
         } catch (Exception e) {
             throw new ServletException(e);
         }

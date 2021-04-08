@@ -34,6 +34,6 @@ public class EmailService implements ConsumerService<String> {
     }
 
     public static void main(String[] args) {
-        new ServiceRunner(EmailService::new).start(THREADS);
+        new ServiceRunner<>(EmailService::new).start(THREADS);
     }
 }

@@ -39,6 +39,6 @@ public class ReadingReportService implements ConsumerService<User> {
     }
 
     public static void main(String[] args) {
-        new ServiceRunner(ReadingReportService::new).start(THREADS);
+        new ServiceRunner<>(ReadingReportService::new).start(THREADS);
     }
 }

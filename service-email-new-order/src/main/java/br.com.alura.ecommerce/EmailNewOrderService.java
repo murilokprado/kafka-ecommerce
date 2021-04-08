@@ -41,6 +41,6 @@ public class EmailNewOrderService implements ConsumerService<Order> {
     }
 
     public static void main(String[] args) {
-        new ServiceRunner(EmailNewOrderService::new).start();
+        new ServiceRunner<>(EmailNewOrderService::new).start();
     }
 }

@@ -11,6 +11,9 @@ public class ServiceRunner<T> {
         this.provider = new ServiceProvider<>(factory);
     }
 
+    /**
+     * Start without params will starts with a single thread
+     */
     public void start() {
         start(THREADS);
     }
